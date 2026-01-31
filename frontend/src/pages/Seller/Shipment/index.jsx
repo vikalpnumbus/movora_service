@@ -23,7 +23,7 @@ function Shipments() {
                     <div className="card-body">
                         <div className="row align-items-center">
                             <div className="col-md-4">
-                                <h4 className="card-title">Shipment</h4>
+                                <h4 className="card-title">Forward</h4>
                             </div>
 
                             <div className="col-md-8 col-sm-12 d-flex justify-content-end gap-2">
@@ -58,6 +58,34 @@ function Shipments() {
                                 }}
                             />}
                         </div>
+                        <div className="shipment-tabs d-flex flex-wrap gap-4">
+                            <div className="tab-section">
+                                <div className="tab_header">Shipment Summary</div>
+                                <div className="btn-group flex-wrap w-100">
+                                    <button className="btn custom_tab">All <br />0</button>
+                                    <button className="btn custom_active_tab">Cancelled <br />0</button>
+                                </div>
+                            </div>
+
+                            <div className="tab-section">
+                                <div className="tab_header">Shipment Journey</div>
+                                <div className="btn-group flex-wrap w-100">
+                                    <button className="btn custom_tab">Ready For Pickup <br />0</button>
+                                    <button className="btn custom_tab">In Transit <br />0</button>
+                                    <button className="btn custom_tab">Delivered <br />0</button>
+                                    <button className="btn custom_tab">RTO <br />0</button>
+                                </div>
+                            </div>
+
+                            <div className="tab-section">
+                                <div className="tab_header">NDR Exceptions</div>
+                                <div className="btn-group flex-wrap w-100">
+                                    <button className="btn custom_tab">Action Required <br />0</button>
+                                    <button className="btn custom_tab">Action Requested <br />0</button>
+                                </div>
+                            </div>
+                        </div>
+
 
                         <div className="row mt-3">
                             <div className="col-12">
