@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90">
+  <!-- Top Left -->
+  <rect x="0" y="0" width="40" height="40" rx="12" ry="12" fill="#4D194D"/>
+
+  <!-- Top Right -->
+  <rect x="45" y="0" width="40" height="40" rx="12" ry="12" fill="#DA627D"/>
+
+  <!-- Bottom Left -->
+  <rect x="0" y="45" width="40" height="40" rx="12" ry="12" fill="#4D194D"/>
+
+  <!-- Bottom Right -->
+  <rect x="45" y="45" width="40" height="40" rx="12" ry="12" fill="#4D194D"/>
+
+  <!-- Center Star -->
+  <polygon
+      points="42,42 25,25 42,30 59,25 42,42 59,59 42,54 25,59"
+      fill="#FFFFFF"/>
+</svg>
