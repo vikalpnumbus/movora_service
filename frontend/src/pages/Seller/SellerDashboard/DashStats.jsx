@@ -37,7 +37,7 @@ function DashStats({ defaultStart, defaultEnd }) {
 
             const { data } = await api.get(url);
 
-            setStatsData(data?.data[0] || []);
+            setStatsData(data?.data || {});
         } catch (error) {
             console.error("Fetch error:", error);
             setStatsData([]);
@@ -60,7 +60,7 @@ function DashStats({ defaultStart, defaultEnd }) {
                                 <div>
                                     <p className="statistics-title">Total Order</p>
                                     <h3 className="rate-percentage">
-                                        {statsData?.total_delivered_shipments || "--"}
+                                        {statsData?.total_orders || "--"}
                                     </h3>
                                 </div>
 

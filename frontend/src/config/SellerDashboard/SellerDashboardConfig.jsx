@@ -4,6 +4,5 @@ const SellerDashboardConfig = {
   courierWiseStats: apiUrl + "/dashboard/stats/courier-wise",
   cityWiseStats: apiUrl + "/dashboard/stats/city-wise",
   paymentModeWiseStats: apiUrl + "/dashboard/stats/payment-mode-wise",
-  productWiseStats: apiUrl + "/dashboard/stats/product-wise",
 };
 export default SellerDashboardConfig;

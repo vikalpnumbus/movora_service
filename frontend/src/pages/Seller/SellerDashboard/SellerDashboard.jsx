@@ -7,7 +7,6 @@ import CourierWiseLoad from './CourierWiseLoad';
 import CourierWise from './CourierWise';
 import TopDestinationStats from './TopDestinationStats';
 import PaymentModeWise from './PaymentModeWise';
-import ProductWiseStats from './ProductWiseStats';
 
 function SellerDashboard() {
     const navigate = useNavigate();
@@ -42,7 +41,6 @@ function SellerDashboard() {
                                     <TopDestinationStats defaultStart={defaultStart} defaultEnd={defaultEnd} />
                                     <PaymentModeWise defaultStart={defaultStart} defaultEnd={defaultEnd} />
                                 </div>
-                                <ProductWiseStats defaultStart={defaultStart} defaultEnd={defaultEnd} />
                             </div>
                         </div>
                     </div>
