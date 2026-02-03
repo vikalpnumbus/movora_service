@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import companyDetailsConfig from "../config/CompanyDetails/CompanyDetailsConfig";
-import company_logo from "../../public/themes/assets/company_image/logo_company.png";
+import company_logo from "../../public/themes/assets/company_image/movoralogo.svg";
 import api from "../utils/api";
 import RechargeModal from "./RechargeModal";
 function Navbar({ setSideNavActive, sideNavActive }) {
@@ -89,7 +89,7 @@ function Navbar({ setSideNavActive, sideNavActive }) {
         </div>
         <div>
           <a className="navbar-brand brand-logo">
-            <img src={company_logo} alt="Kourier Wale" />
+            <img src={company_logo} alt="Movora" />
           </a>
         </div>
       </div>

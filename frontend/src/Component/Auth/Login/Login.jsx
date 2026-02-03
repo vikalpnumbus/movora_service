@@ -8,7 +8,7 @@ import authConfig from "../../../config/Auth/AuthConfig";
 import api from "../../../utils/api";
 import companyDetailsConfig from "../../../config/CompanyDetails/CompanyDetailsConfig";
 import { encrypt } from "../../../middleware/Encryption";
-import company_logo from "../../../../public/themes/assets/company_image/logo_company.png";
+import company_logo from "../../../../public/themes/assets/company_image/movoralogo.svg";
 import ChannelConfig from "../../../config/Channel/ChannelConfig";
 
 function Login() {
@@ -126,12 +126,7 @@ function Login() {
           <div className="row flex-grow">
             <div className="col-lg-12 d-flex align-items-center justify-content-center ">
               <div className="blurred_bg text-left p-5 rounded-4">
-                {/* <img
-                  className="mb-3"
-                  src={company_logo}
-                  alt="Kourier Wale"
-                  width={180}
-                /> */}
+                <img className="mb-3" src={company_logo} alt="Movora"/>
                 <form onSubmit={handleSubmit} className="text-dark">
                   {/* Email Input */}
                   <div className="form-group text-start mb-3">

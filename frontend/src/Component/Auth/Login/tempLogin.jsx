@@ -251,7 +251,7 @@ function Login() {
               >
                 Welcome To
               </p>
-              <h1>Kourier Waale</h1>
+              <h1>Movora</h1>
               <p
                 style={{
                   fontSize: "16px",

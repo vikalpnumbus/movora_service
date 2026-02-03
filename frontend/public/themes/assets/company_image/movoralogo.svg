@@ -1,0 +1,28 @@
+<svg width="420" height="120" viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon -->
+  <g transform="translate(10,10)">
+    <!-- Top Left -->
+    <rect x="0" y="0" rx="12" ry="12" width="40" height="40" fill="#4D194D"/>
+    <!-- Top Right -->
+    <rect x="45" y="0" rx="12" ry="12" width="40" height="40" fill="#DA627D"/>
+    <!-- Bottom Left -->
+    <rect x="0" y="45" rx="12" ry="12" width="40" height="40" fill="#4D194D"/>
+    <!-- Bottom Right -->
+    <rect x="45" y="45" rx="12" ry="12" width="40" height="40" fill="#4D194D"/>
+
+    <!-- Star / Arrow -->
+    <polygon
+      points="42,42 25,25 42,30 59,25 42,42 59,59 42,54 25,59"
+      fill="#FFFFFF"/>
+  </g>
+
+  <!-- Text -->
+  <text x="130" y="75"
+        font-size="48"
+        font-family="Poppins, Montserrat, Arial, sans-serif"
+        font-weight="700"
+        fill="#4D194D"
+        letter-spacing="2">
+    MOVORA
+  </text>
+</svg>

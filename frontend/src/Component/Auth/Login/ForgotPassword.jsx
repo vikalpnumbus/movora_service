@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAlert } from "../../../middleware/AlertContext";
 import authConfig from "../../../config/Auth/AuthConfig";
-import company_logo from "../../../../public/themes/assets/company_image/logo_company.png";
+import company_logo from "../../../../public/themes/assets/company_image/movoralogo.svg";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -55,12 +55,7 @@ function ForgotPassword() {
             {/* Left Section */}
             <div className="col-lg-6 d-flex align-items-center justify-content-center">
               <div className="auth-form-transparent text-left p-3">
-                <img
-                  className="mb-3"
-                  src={company_logo}
-                  alt="Kourier Wale"
-                  width={180}
-                />
+                <img className="mb-3" src={company_logo} alt="Movora"/>
                 <form onSubmit={handleSubmit}>
                   <div className="form-group text-start mb-3">
                     <div className="input-group">

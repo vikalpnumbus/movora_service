@@ -6,7 +6,7 @@ import { mdiEye, mdiEyeOff, mdiPencil } from "@mdi/js";
 import { useAlert } from "../../../middleware/AlertContext";
 import authConfig from "../../../config/Auth/AuthConfig";
 import { encrypt } from "../../../middleware/Encryption";
-import company_logo from "../../../../public/themes/assets/company_image/logo_company.png";
+import company_logo from "../../../../public/themes/assets/company_image/movoralogo.svg";
 
 function Register() {
   const navigate = useNavigate();
@@ -228,12 +228,7 @@ function Register() {
                   className="auth-form-transparent text-left p-3"
                   style={{ width: "75%" }}
                 >
-                  <img
-                    className="mb-3"
-                    src={company_logo}
-                    alt="Kourier Wale"
-                    width={180}
-                  />
+                  <img className="mb-3" src={company_logo} alt="Movora"/>
                   {step === 1 && (
                     <>
                       <form onSubmit={handleNextStep1}>
