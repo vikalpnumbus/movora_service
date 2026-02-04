@@ -120,11 +120,11 @@ function Login() {
   };
 
   return (
-    <div className="container-scroller " >
+    <div className="container-scroller">
       <div className="container-fluid page-body-wrapper full-page-wrapper" >
         <div className="content-wrapper d-flex align-items-stretch auth lock-full-bg">
           <div className="row flex-grow">
-            <div className="col-lg-12 d-flex align-items-center justify-content-center ">
+            <div className="col-lg-12 d-flex align-items-center justify-content-center">
               <div className="blurred_bg text-left p-5 rounded-4">
                 <img className="mb-3" src={company_logo} alt="Movora"/>
                 <form onSubmit={handleSubmit} className="text-dark">
@@ -186,9 +186,8 @@ function Login() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="btn ripple  btn-block w-100 text-white"
+                    className="btn ripple  btn-block w-100 text-white submit-button-movora"
                     disabled={loading}
-                    style={{ background: "#0c243d" }}
                   >
                     {loading ? "Signing In..." : "Sign In"}
                   </button>

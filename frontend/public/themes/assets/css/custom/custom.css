@@ -326,6 +326,33 @@ thead .sticky-action {
     min-width: 260px;
 }
 
+
+.submit-button-movora
+{
+    background-color: #4D194D !important;
+    color: #fff !important;
+}
+
+label {
+    display: inline-block !important;
+    font-size: 18px !important;
+    color: #000 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color emoji";
+    text-overflow: ellipsis !important;
+    font-weight: 600 !important;
+}
+.reg-movora-img
+{
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+.form-control
+{
+    padding: 0px 0px 0px 10px !important;
+    color: #000 !important;
+}
+
 /* 🔹 Mobile responsiveness */
 @media (max-width: 768px) {
     .shipment-tabs {

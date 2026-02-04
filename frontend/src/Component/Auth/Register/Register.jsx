@@ -223,12 +223,9 @@ function Register() {
         <div className="container-fluid page-body-wrapper full-page-wrapper">
           <div className="content-wrapper d-flex align-items-stretch auth auth-img-bg">
             <div className="row flex-grow">
-              <div className="col-lg-6 d-flex align-items-center justify-content-center">
-                <div
-                  className="auth-form-transparent text-left p-3"
-                  style={{ width: "75%" }}
-                >
-                  <img className="mb-3" src={company_logo} alt="Movora"/>
+              <div className="col-lg-12 d-flex align-items-center justify-content-center">
+                <div className="auth-form-transparent text-left p-3">
+                  <img className="mb-3 reg-movora-img" src={company_logo} alt="Movora"/>
                   {step === 1 && (
                     <>
                       <form onSubmit={handleNextStep1}>
@@ -322,7 +319,6 @@ function Register() {
                                 name="shippingVolume"
                                 value={form.shippingVolume}
                                 onChange={handleChange}
-                                style={{ lineHeight: "0.6" }}
                               >
                                 {" "}
                                 <option value="">Select</option>{" "}
@@ -407,7 +403,7 @@ function Register() {
                         </div>{" "}
                         <button
                           type="submit"
-                          className="btn ripple btn-primary btn-block w-100"
+                          className="btn ripple btn-primary btn-block w-100 submit-button-movora"
                           disabled={loading}
                         >
                           {" "}
@@ -531,11 +527,11 @@ function Register() {
                   )}
                 </div>
               </div>
-              <div className="col-lg-6 register-half-bg d-flex flex-row">
+              {/* <div className="col-lg-6 register-half-bg d-flex flex-row">
                 <p className="text-white fw-medium text-center flex-grow align-self-end">
                   Copyright © 2021 All rights reserved.
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
