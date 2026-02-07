@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import companyDetailsConfig from "../config/CompanyDetails/CompanyDetailsConfig";
 import company_logo from "../../public/themes/assets/company_image/movoralogo.svg";
+import companyfavicon from "../assets/favicon.svg";
 import api from "../utils/api";
 import RechargeModal from "./RechargeModal";
 function Navbar({ setSideNavActive, sideNavActive }) {
@@ -107,10 +108,22 @@ function Navbar({ setSideNavActive, sideNavActive }) {
         )}
 
         <ul className="navbar-nav ms-auto">
-
+          <li className="nav-item">
+            <form className="search-form" onSubmit={handleSearchAwb}>
+              <i className="icon-search"></i>
+              <input
+                type="search"
+                className="form-control"
+                placeholder="Search AWB's"
+                title="Search here"
+                value={searchAWb}
+                onChange={(e) => setSearchAWB(e.target.value)}
+              />
+            </form>
+          </li> &nbsp; &nbsp;
           <li className="nav-item custom_width">
             <div
-              className="nav-link dropdown-bordered  dropdown-toggle-split "
+              className="header_button nav-link dropdown-bordered dropdown-toggle-split "
               id="messageDropdown"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -121,10 +134,9 @@ function Navbar({ setSideNavActive, sideNavActive }) {
               Recharge
             </div>
           </li>
-          
           <li className="nav-item">
             <div
-              className="nav-link dropdown-bordered  dropdown-toggle-split"
+              className="header_button nav-link dropdown-bordered dropdown-toggle-split"
               id="messageDropdown"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -134,16 +146,7 @@ function Navbar({ setSideNavActive, sideNavActive }) {
             </div>
           </li>
           <li className="nav-item dropdown d-lg-block user-dropdown">
-            <div
-              className="nav-link dropdown-bordered  dropdown-toggle-split"
-              id="messageDropdown"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-              style={{ cursor: "pointer" }}
-            >
-              {" "}
-              Quick Action{" "}
-            </div>
+            <i className="mdi mdi-grid dropdown-toggle-split" id="messageDropdown" data-bs-toggle="dropdown" aria-expanded="false" style={{ cursor: "pointer", fontSize: "30px"}}></i>
             <div
               className="dropdown-menu dropdown-menu-right navbar-dropdown p-0"
               aria-labelledby="messageDropdown"
@@ -166,20 +169,6 @@ function Navbar({ setSideNavActive, sideNavActive }) {
               </Link>
             </div>
           </li>
-          <li className="nav-item">
-            <form className="search-form" onSubmit={handleSearchAwb}>
-              <i className="icon-search"></i>
-              <input
-                type="search"
-                className="form-control"
-                placeholder="Search AWB's"
-                title="Search here"
-                value={searchAWb}
-                onChange={(e) => setSearchAWB(e.target.value)}
-              />
-            </form>
-          </li>
-
           <li className="nav-item dropdown  d-lg-block user-dropdown">
             <div
               id="UserDropdown"
@@ -187,12 +176,7 @@ function Navbar({ setSideNavActive, sideNavActive }) {
               aria-expanded="false"
               style={{ cursor: "pointer", fontSize: "2rem", lineHeight: "0" }}
             >
-              <i className="mdi mdi-account-circle"></i>
-              {/* <img
-                className="img-xs rounded-circle"
-                src="../assets/images/faces/face8.jpg"
-                alt="Profile"
-              /> */}
+              <img className="img-xs rounded-circle profile-img" src={companyfavicon} alt="Profile"/>
             </div>
             <div
               className="dropdown-menu dropdown-menu-right navbar-dropdown p-0"

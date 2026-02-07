@@ -380,3 +380,34 @@ label {
         font-size: 13px;
     }
 }
+
+.profile-img
+{
+  object-fit: cover;
+}
+
+.header_button
+{
+   background-color: #DA627D !important;
+   color: #fff;
+   border: 1px solid #DA627D !important;
+}
+
+.modal-header {
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: var(--bs-modal-header-padding);
+    border-bottom: var(--bs-modal-header-border-width) solid var(--bs-modal-header-border-color);
+    /* border-top-left-radius: var(--bs-modal-inner-border-radius); */
+    /* border-top-right-radius: var(--bs-modal-inner-border-radius); */
+    height: 65px !important;
+    background: #4D194D !important;
+    color: #fff !important;
+}
+
+.btn-close
+{
+    color:  #fff !important;
+}
