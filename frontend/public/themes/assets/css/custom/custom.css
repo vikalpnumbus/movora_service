@@ -415,9 +415,82 @@ label {
     height: 65px !important;
     background: #4D194D !important;
     color: #fff !important;
+    padding: 20px 20px 20px 20px !important;
+}
+
+.modal-title {
+    margin-bottom: 0 !important;
+    line-height: var(--bs-modal-title-line-height) !important;
+    font-weight: bold !important;
+}
+
+.modal .modal-dialog .modal-content .modal-header .close {
+    border: none !important;
+    background: transparent !important;
+    margin-top: -10px !important;
+}
+
+.modal .modal-dialog .modal-content .modal-header .close span {
+    font-size: 32px !important;
+    font-weight: 400 !important;
+    color: #fff !important;
+}
+
+.btn-dark {
+    background: #006466 !important;
+    color: #ffffff;
 }
 
 .btn-close
 {
     color:  #fff !important;
+}
+
+
+
+.hide-card {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.border-secondary-subtle {
+  border-color: #dee2e6;
+}
+
+
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.toggle-row:hover {
+  background-color: #f5f5f5;
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Switch Smoothness */
+.form-switch .form-check-input {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+
+.preview-label {
+  border: 1px solid #000;
+  padding: 12px;
+  font-size: 12px;
+  background: #fff;
 }
