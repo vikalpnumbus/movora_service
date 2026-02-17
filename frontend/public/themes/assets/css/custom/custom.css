@@ -136,6 +136,31 @@ a {
     font-weight: 700;
 }
 
+.shadow-sm
+{
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 5px !important;
+}
+
+.address-textarea {
+  height: 50px !important;
+  resize: none; /* optional */
+}
+
+.text-danger
+{
+    color: rgb(202 5 5) !important;
+    font-weight: bold;
+    text-transform: capitalize;
+    font-size: 12px;
+}
+
+.charge-info-text {
+  font-size: 12px !important;
+  color: #04c !important;
+  font-weight: bold !important;
+}
+
 .custom-option {
     padding-left: 0;
     border: 1px solid #dbdade;
@@ -345,7 +370,7 @@ thead .sticky-action {
 
 label {
     display: inline-block !important;
-    font-size: 18px !important;
+    font-size: 13px !important;
     color: #000 !important;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color emoji";
     text-overflow: ellipsis !important;

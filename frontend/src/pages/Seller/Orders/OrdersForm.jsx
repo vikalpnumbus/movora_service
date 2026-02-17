@@ -41,29 +41,29 @@ function OrdersForm() {
   const [errors, setErrors] = useState({});
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [productsPrice, setProductsPrice] = useState(0);
+  const [showAddWarehouseModal, setShowAddWarehouseModal] = useState(false);
+  const [initialWarehouseData, setInitialWarehouseData] = useState("");
+  const [initialRtoWarehouseData, setInitialRtoWarehouseData] = useState([]);
   const { showError, showSuccess } = useAlert();
   const { id } = useParams();
   const navigate = useNavigate();
-  const [initialProductData, setInitialProductData] = useState([]);
-  const [initialWarehouseData, setInitialWarehouseData] = useState("");
-  const [productsPrice, setProductsPrice] = useState(0);
-  const [showAddWarehouseModal, setShowAddWarehouseModal] = useState(false);
-
   const inputRefs = useRef({});
+
   const setRef = (name, node) => {
     if (node) inputRefs.current[name] = node;
   };
 
+  /* -------------------- ORDER ID -------------------- */
   useEffect(() => {
-    const brandPrefix = "";
     const uniqueId = `${Math.floor(Date.now() / 1000)}`;
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
-      orderId: `${brandPrefix}${uniqueId}${location.pathname.includes("/orders/clone") ? "-Copy" : ""
-        }`,
+      orderId: `${uniqueId}${location.pathname.includes("/clone") ? "-Copy" : ""}`,
     }));
   }, []);
 
+  /* -------------------- HANDLE CHANGE -------------------- */
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -113,11 +113,8 @@ function OrdersForm() {
     }
 
     if (name === "collectableAmount") {
-      // console.log('newValue: ', newValue);
-      // console.log('form?.orderAmount: ', form?.orderAmount);
       const collectable = Number(newValue);
       const orderAmount = Number(form?.orderAmount);
-
       if (collectable > orderAmount) {
         setErrors(prev => ({
           ...prev,
@@ -131,94 +128,95 @@ function OrdersForm() {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   }, [form.orderAmount]);
 
-  const handleFetchPincode = async (pincode) => {
-    setLoadingPincode(true);
-    try {
-      const response = await api.get(
-        `${warehouseConfig.pincodeApi}/${pincode}`
-      );
-      if (response?.data?.status === 200) {
-        if (!response.data?.data || response.data.data.length === 0) {
-          return setErrors((prev) => ({
-            ...prev,
-            "shippingDetails.pincode": "Enter correct pincode",
-          }));
-        }
-        const { city, state } = response.data.data;
-        setForm((prev) => ({
-          ...prev,
-          "shippingDetails.city": city,
-          "shippingDetails.state": state,
-        }));
-        setErrors((prev) => ({
-          ...prev,
-          "shippingDetails.city": "",
-          "shippingDetails.state": "",
-          "shippingDetails.pincode": "",
-        }));
-      }
-    } catch (error) {
-      console.error("Pincode Fetch Error:", error);
-      setErrors((prev) => ({
-        ...prev,
-        "shippingDetails.pincode": "Enter correct pincode",
-      }));
-    } finally {
-      setLoadingPincode(false);
-    }
-  };
-
+  /* -------------------- PINCODE -------------------- */
   useEffect(() => {
-    if (/^\d{6}$/.test(form["shippingDetails.pincode"])) {
-      handleFetchPincode(form["shippingDetails.pincode"]);
-    }
+    const fetchPincode = async () => {
+      if (!/^\d{6}$/.test(form["shippingDetails.pincode"])) return;
+      setLoadingPincode(true);
+      try {
+        const res = await api.get(
+          `${warehouseConfig.pincodeApi}/${form["shippingDetails.pincode"]}`
+        );
+        if (!res?.data?.data) {
+          setErrors(prev => ({
+            ...prev,
+            "shippingDetails.pincode": "Invalid pincode",
+          }));
+          return;
+        }
+        setForm(prev => ({
+          ...prev,
+          "shippingDetails.city": res.data.data.city,
+          "shippingDetails.state": res.data.data.state,
+        }));
+      } catch {
+        setErrors(prev => ({
+          ...prev,
+          "shippingDetails.pincode": "Invalid pincode",
+        }));
+      } finally {
+        setLoadingPincode(false);
+      }
+    };
+
+    fetchPincode();
   }, [form["shippingDetails.pincode"]]);
 
+  /* -------------------- VOLUMETRIC WEIGHT -------------------- */
   useEffect(() => {
-    const length = parseFloat(form["packageDetails.length"]) || 0;
-    const breadth = parseFloat(form["packageDetails.breadth"]) || 0;
-    const height = parseFloat(form["packageDetails.height"]) || 0;
-    if (length > 0 && breadth > 0 && height > 0) {
-      const volWeight = ((length * breadth * height) / 5000);
-      setForm((prev) => ({
-        ...prev,
-        "packageDetails.volumetricWeight": (volWeight).toFixed(2),
-      }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        "packageDetails.volumetricWeight": "0",
-      }));
-    }
+    const l = Number(form["packageDetails.length"]) || 0;
+    const b = Number(form["packageDetails.breadth"]) || 0;
+    const h = Number(form["packageDetails.height"]) || 0;
+
+    const vol = l && b && h ? ((l * b * h) / 5000).toFixed(2) : "0";
+    setForm(prev => ({ ...prev, "packageDetails.volumetricWeight": vol }));
   }, [
     form["packageDetails.length"],
     form["packageDetails.breadth"],
     form["packageDetails.height"],
   ]);
 
+  /* -------------------- FINAL AMOUNT -------------------- */
   useEffect(() => {
-    if (form.paymentType === "prepaid") {
-      setForm((prev) => ({ ...prev, collectableAmount: "0" }));
-      return;
-    }
-    const finalAmount = parseFloat(productsPrice) || 0;
-    const shipping = parseFloat(form["charges.shipping"]) || 0;
-    const tax = parseFloat(form["charges.tax_amount"]) || 0;
-    const cod =
-      form.paymentType === "cod" ? parseFloat(form["charges.cod"]) || 0 : 0;
-    const discount = parseFloat(form["charges.discount"]) || 0;
-    const total = finalAmount + shipping + tax + cod - discount;
-    setForm((prev) => ({ ...prev, collectableAmount: total.toFixed(2), orderAmount: total.toFixed(2) }));
-  }, [
-    productsPrice,
-    form["charges.shipping"],
-    form["charges.tax_amount"],
-    form["charges.cod"],
-    form["charges.discount"],
-    form.paymentType,
-  ]);
+  if (form.paymentType === "prepaid") {
+    setForm(prev => ({
+      ...prev,
+      collectableAmount: "0",
+    }));
+    return;
+  }
 
-  const validateForm = (form) => {
+  const finalAmount = parseFloat(productsPrice) || 0;
+  const shipping = parseFloat(form["charges.shipping"]) || 0;
+  const tax = parseFloat(form["charges.tax_amount"]) || 0;
+  const cod =
+    form.paymentType === "cod"
+      ? parseFloat(form["charges.cod"]) || 0
+      : 0;
+  const discount = parseFloat(form["charges.discount"]) || 0;
+
+  const total = finalAmount + shipping + tax + cod - discount;
+
+  setForm(prev => ({
+    ...prev,
+    orderAmount: total.toFixed(2),
+    collectableAmount: total.toFixed(2),
+  }));
+}, [
+  productsPrice,
+  form["charges.shipping"],
+  form["charges.tax_amount"],
+  form["charges.cod"],
+  form["charges.discount"],
+  form.paymentType,
+]);
+
+const handleBlur = (e) => {
+  const { name, value } = e.target;
+  validateField(name, value);
+};
+
+const validateForm = (form) => {
     const errors = {};
     if (!form.paymentType) errors.paymentType = "Payment type required";
     if (!form["shippingDetails.fname"])
@@ -270,23 +268,20 @@ function OrdersForm() {
     if (!form["packageDetails.volumetricWeight"])
       errors["packageDetails.volumetricWeight"] = "Volumetric weight required";
     if (!form.orderAmount) errors.orderAmount = "Final amount required";
-    // if (!form["charges.shipping"])
-    //   errors["charges.shipping"] = "Shipping charge required";
     if (!form["charges.tax_amount"])
       errors["charges.tax_amount"] = "Tax amount required";
     if (form.paymentType === "cod" && !form["charges.cod"])
       errors["charges.cod"] = "COD charge required";
-    // if (!form["charges.discount"])
-    //   errors["charges.discount"] = "Discount required";
     if (!form.products || form.products.length === 0)
       errors.products = "At least one product must be added";
     if (!form.warehouse_id) errors.warehouse_id = "Warehouse required";
     if (!form.rto_warehouse_id)
       errors.rto_warehouse_id = "RTO Warehouse required";
-
     return errors;
   };
 
+
+  /* -------------------- SUBMIT -------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm(form);
@@ -365,487 +360,486 @@ function OrdersForm() {
     }
   };
 
-  const handleFetchData = async (orderId) => {
-    try {
-      const response = await api.get(`${ordersConfig.ordersApi}/${orderId}`);
-      const initialData = response?.data?.data?.result?.[0] || {};
-      return initialData;
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      return {};
-    }
-  };
-
-  const [initialRtoWarehouseData, setInitialRtoWarehouseData] = useState([]);
-  useEffect(() => {
-    const fetchData = async () => {
-      if (
-        location.pathname.includes("/orders/edit") ||
-        location.pathname.includes("/orders/clone")
-      ) {
-        const data = await handleFetchData(id);
-        setInitialProductData(data?.products || []);
-        setInitialWarehouseData(data?.warehouse_id || "");
-        setInitialRtoWarehouseData(data?.rto_warehouse_id || "");
-        setForm({
-          orderId: location.pathname.includes("/orders/clone")
-            ? `${data?.orderId}-Copy`
-            : data?.orderId || "",
-          paymentType: data?.paymentType || "",
-          "shippingDetails.fname": data?.shippingDetails?.fname || "",
-          "shippingDetails.lname": data?.shippingDetails?.lname || "",
-          "shippingDetails.address": data?.shippingDetails?.address || "",
-          "shippingDetails.pincode": data?.shippingDetails?.pincode || "",
-          "shippingDetails.city": data?.shippingDetails?.city || "",
-          "shippingDetails.state": data?.shippingDetails?.state || "",
-          "shippingDetails.phone": data?.shippingDetails?.phone || "",
-          "shippingDetails.alternatePhone":
-            data?.shippingDetails?.alternatePhone || "",
-          "packageDetails.weight": data?.packageDetails?.weight || "",
-          "packageDetails.height": data?.packageDetails?.height || "",
-          "packageDetails.breadth": data?.packageDetails?.breadth || "",
-          "packageDetails.length": data?.packageDetails?.length || "",
-          "packageDetails.volumetricWeight":
-            data?.packageDetails?.volumetricWeight || "",
-          orderAmount: data?.orderAmount || "",
-          "charges.shipping": data?.charges?.shipping || "",
-          "charges.tax_amount": data?.charges?.tax_amount || "",
-          "charges.cod": data?.charges?.cod || "",
-          "charges.discount": data?.charges?.discount || "",
-          collectableAmount: data?.collectableAmount || "",
-          // products: [],
-          // warehouse_id: data?.warehouse_id || "",
-        });
-      }
-    };
-
-    fetchData();
-  }, [location.pathname, id]);
-
   return (
     <>
-      <div className="tab-content tab-content-vertical">
-        <div className="tab-pane fade show active" role="tabpanel">
-          <div className="row text-center">
-            <div className="col-lg-12 col-md-12 col-sm-12 ">
-              <div className="card custom-card">
-                <div className="card-body pd-45">
-                  <form onSubmit={handleSubmit}>
-                    <div className="row">
+      <div className="container-fluid">
+        <form onSubmit={handleSubmit}>
+          <div className="row g-4">
+            {/* LEFT */}
+            <div className="col-lg-8 shadow-sm">
+              <Section title="Shipping Information">
+                <div className="col-md-6">
+                  <label className="form-label">
+                    First Name<span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingDetails.fname"
+                    className={`form-control ${
+                      errors["shippingDetails.fname"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.fname"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
 
-                      <div className="col-md-8">
-                        <div className="row">
-                          <h4 className="text-start mb-3">
-                            Shipping Information
-                          </h4>
-                          {[
-                            "fname",
-                            "lname",
-                            "phone",
-                            "alternatePhone",
-                            "address",
-                            "pincode",
-                            "city",
-                            "state",
-                          ].map((field) => {
-                            const customLabels = {
-                              fname: "First Name",
-                              lname: "Last Name",
-                              alternatePhone: "Alternate Phone",
-                            };
+                  {errors["shippingDetails.fname"] && (
+                    <small className="text-danger">
+                      {errors["shippingDetails.fname"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">
+                    Last Name<span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingDetails.lname"
+                    className={`form-control ${
+                      errors["shippingDetails.lname"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.lname"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
 
-                            const label =
-                              customLabels[field] ||
-                              field
-                                .replace(/([A-Z])/g, " $1")
-                                .replace(/^./, (str) => str.toUpperCase());
+                  {errors["shippingDetails.lname"] && (
+                    <small className="text-danger">
+                      {errors["shippingDetails.lname"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-12">
+                  <label className="form-label">
+                    Address <span className="text-danger">*</span>
+                  </label>
+                  <textarea
+                    type="text"
+                    name="shippingDetails.address"
+                    className={`form-control address-textarea ${
+                      errors["shippingDetails.address"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.address"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                  {errors["shippingDetails.address"] && (
+                    <small className="text-danger">
+                      {errors["shippingDetails.address"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">
+                    Phone <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingDetails.phone"
+                    className={`form-control ${
+                      errors["shippingDetails.phone"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.phone"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
 
-                            const maxLength =
-                              field === "phone" || field === "alternatePhone"
-                                ? 10
-                                : field === "pincode"
-                                  ? 6
-                                  : undefined;
+                  {errors["shippingDetails.phone"] && (
+                    <small className="text-danger">
+                      {errors["shippingDetails.phone"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">
+                    Alternate Phone (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingDetails.alternatePhone"
+                    className={`form-control ${
+                      errors["shippingDetails.alternatePhone"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.alternatePhone"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                  {errors["shippingDetails.alternatePhone"] && (
+                    <small className="text-danger">
+                      {errors["shippingDetails.alternatePhone"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label">
+                    Pincode <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingDetails.pincode"
+                    className={`form-control ${
+                      errors["shippingDetails.pincode"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.pincode"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    loading={loadingPincode}
+                  />
+                  {errors["shippingDetails.pincode"] && (
+                    <small className="text-danger">
+                      {errors["shippingDetails.pincode"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label">
+                    City <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingDetails.city"
+                    className={`form-control ${
+                      errors["shippingDetails.city"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.city"] || ""}
+                    disabled
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label">
+                    State <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingDetails.state"
+                    className={`form-control ${
+                      errors["shippingDetails.state"] ? "is-invalid" : ""
+                    }`}
+                    value={form["shippingDetails.state"] || ""}
+                    disabled
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </div>
+              </Section>
+              <hr></hr>
+              <Section>
+                <ProductSection
+                  setForm={setForm}
+                  setProductsPrice={setProductsPrice}
+                  setErrors={setErrors}
+                />
+                {errors.products && (
+                  <small className="text-danger d-block mt-1">
+                    {errors.products}
+                  </small>
+                )}
+              </Section>
+              <hr></hr>
+              <div className="row mt-4">
+                <div className="col-md-6"></div>
+                <div className="col-md-6">
+                  <h4 className="text-start mb-3">Charges For Seller</h4>
+                  <small className="charge-info-text">
+                  All Charges Entered Here are Charged to the End Customer and Included in the Final Colletable Amount.
+                  </small>
+                  <hr></hr>
+                  {/* Order Amount */}
+                  <div className="row align-items-center mb-2">
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">
+                        Order Amount
+                      </label>
+                    </div>
+                    <div className="col-md-8">
+                      <input
+                        className="form-control"
+                        value={productsPrice}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                  {/* Shipping */}
+                  <div className="row align-items-center mb-2">
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">
+                        Shipping Charge
+                      </label>
+                    </div>
+                    <div className="col-md-8">
+                      <input
+                        className="form-control"
+                        name="charges.shipping"
+                        value={form["charges.shipping"]}
+                        onChange={handleChange}
+                      />
+                      {errors["charges.shipping"] && (
+                        <small className="text-danger">
+                          {errors["charges.shipping"]}
+                        </small>
+                      )}
+                    </div>
+                  </div>
 
-                            return field === "address" ? (
-                              <div
-                                key={`shippingDetails.${field}`}
-                                className="col-md-12 mb-2"
-                              >
-                                <div className="form-floating text-start mb-3">
-                                  <textarea
-                                    className="form-control form-textarea"
-                                    label={label}
-                                    placeholder={label}
-                                    name={`shippingDetails.${field}`}
-                                    id={`shippingDetails.${field}`}
-                                    value={form[`shippingDetails.${field}`]}
-                                    onChange={handleChange}
-                                    error={errors[`shippingDetails.${field}`]}
-                                    ref={(node) =>
-                                      setRef(`shippingDetails.${field}`, node)
-                                    }
-                                    rows={3}
-                                  />
-                                  <label htmlFor={`shippingDetails.${field}`}>
-                                    {label}
-                                    <span className="text-danger">*</span>
-                                  </label>
-                                  {errors[`shippingDetails.${field}`] && (
-                                    <small className="text-danger">
-                                      {errors[`shippingDetails.${field}`]}
-                                    </small>
-                                  )}
-                                </div>
-                              </div>
-                            ) : (
-                              <InputField
-                                key={`shippingDetails.${field}`}
-                                label={label}
-                                name={`shippingDetails.${field}`}
-                                value={form[`shippingDetails.${field}`]}
-                                onChange={handleChange}
-                                error={errors[`shippingDetails.${field}`]}
-                                disabled={["city", "state"].includes(field)}
-                                loading={
-                                  field === "pincode" ? loadingPincode : false
-                                }
-                                ref={(node) =>
-                                  setRef(`shippingDetails.${field}`, node)
-                                }
-                                maxLength={maxLength}
-                                screenMd={
-                                  ["city", "state", "pincode"].includes(field)
-                                    ? "4"
-                                    : "6"
-                                }
-                              />
-                            );
-                          })}
-
-                          <ProductSection
-                            setForm={setForm}
-                            setProductsPrice={setProductsPrice}
-                            setErrors={setErrors}
-                            initialProductData={initialProductData}
-                          />
-                          {errors.products && (
-                            <small className="text-danger text-start">
-                              {errors.products}
-                            </small>
-                          )}
-
-                          <div className="col-md-6"></div>
-                          <h4 className="text-start col-md-6 mb-3 mt-3">Charges</h4>
-                          <div className="col-md-6"></div>
-                          <InputField
-                            label="Order Amount"
-                            value={productsPrice}
-                            screenMd="6"
-                            disabled
-                          />
-                          <div className="col-md-6"></div>
-
-                          <InputField
-                            key="charges.shipping"
-                            label="Shipping Charge"
-                            name="charges.shipping"
-                            value={form["charges.shipping"]}
-                            onChange={handleChange}
-                            error={errors["charges.shipping"]}
-                            ref={(node) => setRef("charges.shipping", node)}
-                            screenMd="6"
-                          />
-                          <div className="col-md-6"></div>
-
-                          {form.paymentType === "cod" && (
-                            <>
-                              <InputField
-                                key="charges.cod"
-                                label="COD Charge"
-                                name="charges.cod"
-                                value={form["charges.cod"]}
-                                onChange={handleChange}
-                                error={errors["charges.cod"]}
-                                ref={(node) => setRef("charges.cod", node)}
-                                screenMd="6"
-                              />
-                              <div className="col-md-6"></div>
-                            </>)}
-
-                          {[
-                            "charges.tax_amount",
-                            "charges.discount",
-                          ].map((field) => {
-                            const labelMap = {
-                              "charges.tax_amount": "Tax Amount",
-                              "charges.discount": "Discount",
-                            };
-
-                            return (
-                              <>
-                                <InputField
-                                  key={field}
-                                  label={labelMap[field] || field}
-                                  name={field}
-                                  value={form[field]}
-                                  onChange={handleChange}
-                                  error={errors[field]}
-                                  ref={(node) => setRef(field, node)}
-                                  screenMd="6"
-                                />
-                                <div className="col-md-6"></div>
-                              </>
-                            );
-                          })}
-
-                          <InputField
-                            key="orderAmount"
-                            label="Final Amount"
-                            name="orderAmount"
-                            value={form.orderAmount}
-                            error={errors.orderAmount}
-                            onChange={handleChange}
-                            ref={(node) => setRef("orderAmount", node)}
-                            screenMd="6"
-                            disabled
-                          />
-                          <div className="col-md-6"></div>
-
-                          {form.paymentType === "cod" && (
-                            <InputField
-                              key="collectableAmount"
-                              label="Collectable Amount"
-                              name="collectableAmount"
-                              value={form.collectableAmount}
-                              error={errors.collectableAmount}
-                              onChange={handleChange}
-                              disabled={form.paymentType === "prepaid"}
-                              ref={(node) => setRef("collectableAmount", node)}
-                              screenMd="6"
-                            />
-                          )}
-                        </div>
-                      </div>
-
+                  {/* Tax */}
+                  <div className="row align-items-center mb-2">
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">
+                        Tax Amount
+                      </label>
+                    </div>
+                    <div className="col-md-8">
+                      <input
+                        className="form-control"
+                        name="charges.tax_amount"
+                        value={form["charges.tax_amount"]}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                  {/* Discount */}
+                  <div className="row align-items-center mb-2">
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">
+                        Discount
+                      </label>
+                    </div>
+                    <div className="col-md-8">
+                      <input
+                        className="form-control"
+                        name="charges.discount"
+                        value={form["charges.discount"]}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                    {/* Final Amount */}
+                    <div className="row align-items-center mb-2">
                       <div className="col-md-4">
-                        <div className="row">
-                          <h4 className="text-start mb-3">Order Information</h4>
-                          <InputField
-                            key="orderId"
-                            label="Order ID"
-                            name="orderId"
-                            value={form.orderId}
-                            onChange={handleChange}
-                            error={errors.orderId}
-                            ref={(node) => setRef("orderId", node)}
-                            screenMd="6"
-                          />
-                          <div className="col-md-6 mb-2">
-                            <div className="form-floating text-start mb-3">
-                              <select
-                                className="form-control lh-sm"
-                                name="paymentType"
-                                id="paymentType"
-                                value={form.paymentType}
-                                onChange={handleChange}
-                                ref={(node) => setRef("paymentType", node)}
-                              >
-                                <option value="">Select</option>
-                                {[
-                                  { label: "COD", value: "cod" },
-                                  { label: "Prepaid", value: "prepaid" },
-                                ].map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <label key="paymentType">
-                                Payment Type<span className="text-danger">*</span>
-                              </label>
-                              {errors.paymentType && (
-                                <small className="text-danger">
-                                  {errors.paymentType}
-                                </small>
-                              )}
-                            </div>
-                          </div>
-
-                          <h4 className="text-start mt-3 mb-3">
-                            Package Details
-                          </h4>
-                          <InputField
-                            key="packageDetails.weight"
-                            label="Weight (grams)"
-                            name="packageDetails.weight"
-                            value={form["packageDetails.weight"]}
-                            onChange={handleChange}
-                            error={errors["packageDetails.weight"]}
-                            ref={(node) => setRef("packageDetails.weight", node)}
-                            screenMd="12"
-                          />
-
-                          <div className="col-md-12 mb-2">
-                            <div className="form-group text-start mb-3">
-                              <div className="d-flex gap-2">
-                                {["length", "breadth", "height"].map((dim) => (
-                                  <div
-                                    key={dim}
-                                    className="d-flex flex-column flex-grow-1 form-floating"
-                                  >
-                                    <input
-                                      className="form-control"
-                                      name={`packageDetails.${dim}`}
-                                      id={`packageDetails.${dim}`}
-                                      value={form[`packageDetails.${dim}`]}
-                                      onChange={handleChange}
-                                      placeholder={
-                                        dim.charAt(0).toUpperCase() + dim.slice(1)
-                                      }
-                                      ref={(node) =>
-                                        setRef(`packageDetails.${dim}`, node)
-                                      }
-                                    />
-                                    <label htmlFor={`packageDetails.${dim}`}>
-                                      {dim.charAt(0).toUpperCase() +
-                                        dim.slice(1) +
-                                        " (cm)"}
-                                      <span className="text-danger">*</span>
-                                    </label>
-                                    {errors[`packageDetails.${dim}`] && (
-                                      <small className="text-danger">
-                                        {errors[`packageDetails.${dim}`]}
-                                      </small>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          <InputField
-                            key="packageDetails.volumetricWeight"
-                            label="Volumetric Weight (grams)"
-                            name="packageDetails.volumetricWeight"
-                            value={form["packageDetails.volumetricWeight"]}
-                            error={errors["packageDetails.volumetricWeight"]}
-                            disabled
-                            ref={(node) =>
-                              setRef("packageDetails.volumetricWeight", node)
-                            }
-                            screenMd="12"
-                          />
-                          {/* <div className="col-md-6 mb-2"></div> */}
-
-                          <div className="col-md-12 mt-3">
-                            <WarehouseDropdown
-                              setForm={setForm}
-                              setErrors={setErrors}
-                              initialWarehouseData={initialWarehouseData}
-                              warehouseType={"normal"}
-                            />
-                            {errors.warehouse_id && (
-                              <small className="text-danger text-start mb-4">
-                                {errors.warehouse_id}
-                              </small>
-                            )}
-                          </div>
-
-                          <div className="col-md-12 mt-3">
-                            <WarehouseDropdown
-                              setForm={setForm}
-                              setErrors={setErrors}
-                              initialWarehouseData={initialRtoWarehouseData}
-                              warehouseType={"rto"}
-                            />
-                            {errors.rto_warehouse_id && (
-                              <small className="text-danger text-start mb-4">
-                                {errors.rto_warehouse_id}
-                              </small>
-                            )}
-                          </div>
-                          <div className="col-md-12 mt-2">
-                            <button style={{ width: "150px" }} className="btn btn-dark btn-md py-2 px-3" type="button" onClick={() => setShowAddWarehouseModal(true)}>
-                              Add Warehouse
-                            </button>
-                          </div>
-
-                        </div>
+                        <label className="form-label fw-semibold">
+                          Collectable Amount
+                        </label>
+                      </div>
+                      <div className="col-md-8">
+                        <input
+                          className="form-control bg-light fw-bold"
+                          value={form.orderAmount}
+                          disabled
+                        />
                       </div>
                     </div>
-
-                    <button className="btn btn-primary float-end" type="submit">
-                      {loading ? "Submitting..." : location.pathname.includes("/orders/edit") ? "Edit order" : "Create order"}
-                    </button>
-                  </form>
+                  </div>
                 </div>
               </div>
+
+            {/* RIGHT */}
+            <div className="col-lg-4">
+              <Section title="Order Infomation">
+                <div className="col-md-12">
+                  <label className="form-label">
+                    Order ID <span className="text-danger">*</span>
+                  </label>
+                  <input type="text" className="form-control" value={form.orderId} disabled/>
+                </div>
+                <div className="col-md-12">
+                  <label className="form-label">
+                    Payment Type<span className="text-danger">*</span>
+                  </label>
+                  <select
+                    className={`form-select ${
+                      errors.paymentType ? "is-invalid" : ""
+                    }`}
+                    name="paymentType"
+                    value={form.paymentType || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  >
+                    <option value="">Select Payment Type</option>
+                    <option value="cod">COD</option>
+                    <option value="prepaid">Prepaid</option>
+                  </select>
+
+                  {errors.paymentType && (
+                    <small className="text-danger">
+                      {errors.paymentType}
+                    </small>
+                  )}
+                </div>
+              </Section>
+
+              <Section title="Package">
+                <div className="col-md-12">
+                  <label className="form-label">
+                    Weight (gm) <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="packageDetails.weight"
+                    className={`form-control ${
+                      errors["packageDetails.weight"] ? "is-invalid" : ""
+                    }`}
+                    value={form["packageDetails.weight"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+
+                  {errors["packageDetails.weight"] && (
+                    <small className="text-danger">
+                      {errors["packageDetails.weight"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label">
+                    Length <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="packageDetails.length"
+                    className={`form-control ${
+                      errors["packageDetails.length"] ? "is-invalid" : ""
+                    }`}
+                    value={form["packageDetails.length"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+
+                  {errors["packageDetails.length"] && (
+                    <small className="text-danger">
+                      {errors["packageDetails.length"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label">
+                    Breadth <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="packageDetails.breadth"
+                    className={`form-control ${
+                      errors["packageDetails.breadth"] ? "is-invalid" : ""
+                    }`}
+                    value={form["packageDetails.breadth"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+
+                  {errors["packageDetails.breadth"] && (
+                    <small className="text-danger">
+                      {errors["packageDetails.breadth"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label">
+                    Height <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="packageDetails.height"
+                    className={`form-control ${
+                      errors["packageDetails.height"] ? "is-invalid" : ""
+                    }`}
+                    value={form["packageDetails.height"] || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+
+                  {errors["packageDetails.height"] && (
+                    <small className="text-danger">
+                      {errors["packageDetails.height"]}
+                    </small>
+                  )}
+                </div>
+                <div className="col-md-12">
+                  <label className="form-label">
+                    Volumetric Weight
+                  </label>
+                  <input
+                    type="text"
+                    name="packageDetails.volumetricWeight"
+                    className={`form-control ${
+                      errors["packageDetails.volumetricWeight"] ? "is-invalid" : ""
+                    }`}
+                    value={form["packageDetails.volumetricWeight"] || ""}
+                    disabled
+                  />                  
+                </div>
+              </Section>
+              
+                <div className="col-md-12 mt-3">
+                  <div className="col-md-12 d-flex justify-content-between align-items-center mt-3 mb-1">
+                  <label className="fw-semibold mb-0">
+                    Warehouse Details<span className="text-danger">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-dark"
+                    onClick={() => setShowAddWarehouseModal(true)}
+                  >
+                    + Add
+                  </button>
+                </div>
+                <WarehouseDropdown
+                  setForm={setForm}
+                  setErrors={setErrors}
+                  initialWarehouseData={initialWarehouseData}
+                  warehouseType="normal"
+                />
+                {errors.warehouse_id && (
+                  <small className="text-danger">{errors.warehouse_id}</small>
+                )}
+              </div>
+
+              {/* ---------- RTO WAREHOUSE ---------- */}
+              <div className="col-md-12 mt-3">
+                <WarehouseDropdown
+                  setForm={setForm}
+                  setErrors={setErrors}
+                  initialWarehouseData={initialRtoWarehouseData}
+                  warehouseType="rto"
+                />
+                {errors.rto_warehouse_id && (
+                  <small className="text-danger">{errors.rto_warehouse_id}</small>
+                )}
+              </div>
+
+              <button className="btn btn-primary w-100 mt-3" disabled={loading}>
+                {loading ? "Submitting..." : "Create Order"}
+              </button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
+
       {showAddWarehouseModal && (
-        <AddWarehouseModal
-          onClose={() => setShowAddWarehouseModal(false)}
-        />
+        <AddWarehouseModal onClose={() => setShowAddWarehouseModal(false)} />
       )}
     </>
   );
 }
 
-export default OrdersForm;
+/* -------------------- REUSABLE COMPONENTS -------------------- */
 
-const InputField = React.forwardRef(
-  (
-    {
-      label,
-      name,
-      value,
-      onChange,
-      error,
-      disabled,
-      loading,
-      type = "text",
-      maxLength,
-      screenMd,
-    },
-    ref
-  ) => (
-    <div className={`col-md-${screenMd} mb-2`}>
-      <div className="form-floating text-start mb-3">
-        <input
-          type={type}
-          className="form-control"
-          name={name}
-          id={name}
-          value={value}
-          onChange={onChange}
-          disabled={disabled}
-          ref={ref}
-          maxLength={maxLength}
-          placeholder={name}
-        />
-        <label htmlFor={name}>
-          {label}
-          {name !== "shippingDetails.alternatePhone" && name !== "charges.shipping" && name !== "charges.discount" && (
-            <span className="text-danger">*</span>
-          )}
-        </label>
-        {name === "shippingDetails.pincode" && loading && (
-          <>
-            <small className="text-muted">Fetching city & state...</small>
-            <br />
-          </>
-        )}
-        {name === "packageDetails.weight" && (
-          <>
-            <small className="text-muted">eg: 500, 300 (in grams)</small>
-            <br />
-          </>
-        )}
-        {error && <small className="text-danger">{error}</small>}
-      </div>
+const Section = ({ title, children }) => (
+  <div className="card">
+    <div className="card-body">
+      <h5 className="mb-3">{title}</h5>
+      <div className="row g-3">{children}</div>
     </div>
-  )
+  </div>
 );
+
+const Input = ({ label, loading, ...props }) => (
+  <div className="col-md-6">
+    <label className="form-label">{label}</label>
+    <input className="form-control" {...props} />
+    {loading && <small className="text-muted">Fetching...</small>}
+  </div>
+);
+
+export default OrdersForm;
