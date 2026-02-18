@@ -216,6 +216,18 @@ const handleBlur = (e) => {
   validateField(name, value);
 };
 
+const validateField = (name, value) => {
+  const fieldErrors = validateForm({
+    ...form,
+    [name]: value,
+  });
+
+  setErrors((prev) => ({
+    ...prev,
+    [name]: fieldErrors[name] || "",
+  }));
+};
+
 const validateForm = (form) => {
     const errors = {};
     if (!form.paymentType) errors.paymentType = "Payment type required";
@@ -268,10 +280,6 @@ const validateForm = (form) => {
     if (!form["packageDetails.volumetricWeight"])
       errors["packageDetails.volumetricWeight"] = "Volumetric weight required";
     if (!form.orderAmount) errors.orderAmount = "Final amount required";
-    if (!form["charges.tax_amount"])
-      errors["charges.tax_amount"] = "Tax amount required";
-    if (form.paymentType === "cod" && !form["charges.cod"])
-      errors["charges.cod"] = "COD charge required";
     if (!form.products || form.products.length === 0)
       errors.products = "At least one product must be added";
     if (!form.warehouse_id) errors.warehouse_id = "Warehouse required";
@@ -284,7 +292,9 @@ const validateForm = (form) => {
   /* -------------------- SUBMIT -------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("FORM DATA 👉", form);
     const newErrors = validateForm(form);
+    console.log("VALIDATION ERRORS 👉", newErrors);
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
 
