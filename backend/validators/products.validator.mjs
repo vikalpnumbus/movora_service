@@ -16,7 +16,7 @@ class ValidationClass {
   rules() {
     return [
       this.basicValidator("name", "Product Name"),
-      this.basicValidator("sku", "SKU Code"),
+      this.optionalBasicValidator("sku", "SKU Code"),
       this.categoryValidator("category", "Category"),
       this.priceValidator("price", "Price of the product"),
     ];
@@ -44,6 +44,17 @@ class ValidationClass {
       .isLength({ max: 300 })
       .withMessage(`${label} can be maximum 300 characters long.`);
   }
+
+  optionalBasicValidator(field, label) {
+  return check(field)
+    .optional()
+    .isString()
+    .withMessage(`${label} must be a string.`)
+    .bail()
+    .isLength({ max: 30 })
+    .withMessage(`${label} can be maximum 30 characters long.`);
+}
+
 
   categoryValidator(field, label) {
     const allowedCategories = [
