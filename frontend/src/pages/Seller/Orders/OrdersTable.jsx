@@ -5,6 +5,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import Pagination from "../../../Component/Pagination";
 import ordersConfig from "../../../config/Orders/OrdersConfig";
 import ShipModal from "../Orders/ShipModal";
+import BulkShipModal from "../Orders/BulkShipModal";
 import api from "../../../utils/api";
 import {
   formatDateTime,
@@ -19,6 +20,7 @@ function OrdersTable({ setExportHandler }) {
   const [totalCount, setTotalCount] = useState(0);
   const [defaultStart, defaultEnd] = useMemo(() => getLastNDaysRange(7), []);
   const [showShipModal, setShowShipModal] = useState(false);
+  const [showbulkShipModal, setShowbulkShipModal] = useState(false);
   const [shipOrderDetails, setShipOrderDetails] = useState("");
   const [selectedOrders, setSelectedOrders] = useState([]);
   const orderCanShip = (order) => {
@@ -101,10 +103,10 @@ function OrdersTable({ setExportHandler }) {
   const handleExportOrders = async () => {
     try {
       const params = {
-        start_date: searchParams.get("start_date") || defaultStart,
-        end_date: searchParams.get("end_date") || defaultEnd,
         page: parseInt(searchParams.get("page") || "1", 10),
         limit: parseInt(searchParams.get("limit") || "10", 10),
+        start_date: searchParams.get("start_date") || defaultStart,
+        end_date: searchParams.get("end_date") || defaultEnd,
       };
 
       const optionalKeys = [
@@ -192,10 +194,35 @@ function OrdersTable({ setExportHandler }) {
                 </div>
                 <div
                   className="btn btn-dark btn-md py-2 px-3"
-                  style={{ width: "fit-content" }}
-                >
+                  style={{ width: "fit-content", cursor: "pointer" }}
+                  onClick={() => {
+                    const selectedOrderObjects = dataList.filter(order =>
+                      selectedOrders.includes(order.id)
+                    );
+                    if (!selectedOrderObjects.length) return;
+                    const firstOrder = selectedOrderObjects[0];
+                    const allSameWarehouse = selectedOrderObjects.every(
+                      order => order.warehouse_id === firstOrder.warehouse_id
+                    );
+                    if (!allSameWarehouse) {
+                      alert("Please select orders from same warehouse");
+                      return;
+                    }
+                    const warehouse = warehouseList.find(
+                      (w) => w.id == firstOrder.warehouse_id
+                    );
+                    setShipOrderDetails({
+                      order_ids: selectedOrders,
+                      warehouse_id: firstOrder.warehouse_id,
+                      rto_warehouse_id: firstOrder.rto_warehouse_id,
+                      originpincode: warehouse?.pincode,
+                    });
+                    setShowbulkShipModal(true);
+                  }}
+                  >
                   <Icon path={mdiCubeSend} size={0.7} /> Bulk Ship
                 </div>
+
               </div>
             </>
           )}
@@ -389,6 +416,13 @@ function OrdersTable({ setExportHandler }) {
             handleFetchData={handleFetchData}
           />
         )}
+        {showbulkShipModal && shipOrderDetails && (
+            <BulkShipModal
+              onClose={() => setShowbulkShipModal(false)}
+              orderData={shipOrderDetails}
+              handleFetchData={handleFetchData}
+            />
+          )}
       </div>
     </div>
   );
