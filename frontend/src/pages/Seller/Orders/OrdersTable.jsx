@@ -478,4 +478,5 @@ function OrdersTable({ setExportHandler }) {
     </div>
   );
 }
+
 export default OrdersTable;
